@@ -163,6 +163,34 @@ semana** e manda o comprovante no grupo.
 William, Lincoln, Bruno e Evandro), `bolo_pagamentos` (status semanal) e
 `bolo_config` (guarda o `grupo`).
 
+### Recursos do agente (v2)
+
+Além do fluxo básico de cobrança + comprovante, o workflow tem:
+
+| Recurso | Quando | O que faz |
+| --- | --- | --- |
+| 💸 Pix na cobrança | quarta 20h / sexta 9h | Inclui a chave PIX (linha `pix` da `bolo_config`) nas mensagens |
+| 🗳️ Enquete de sabor | quarta 20h | Enquete nativa no grupo (sabores na linha `sabores` da `bolo_config`) |
+| ☀️ Cutucada | sexta 9h | Cobra **só quem está pendente** (privado + resumo no grupo) |
+| 💬 Comandos | a qualquer hora | `status` (checklist) · `caixa`/`saldo` (resumo financeiro) no grupo |
+| 🧾 Prestação de contas | ao comprar o bolo | Foto da nota com legenda contendo "bolo" → IA lê o custo → saldo do caixa no grupo |
+| 👀 Anti-fraude | por comprovante | Hash barra comprovante repetido; valor < R$10 gera aviso "faltou R$X" |
+| 🎉 Cadastro automático | novato entra no grupo | Insere em `bolo_amigos` + boas-vindas (requer evento `group.v2.join`) |
+| 🏆 Ranking mensal | dia 1, 12h | Pódio dos pagadores mais rápidos + lanterna do mês |
+| ❤️‍🩹 Monitor de saúde | a cada 15 min | Workflow "Monitor Saúde WAHA Bolo": alerta no privado se a sessão cair |
+
+### Manutenção (VPS)
+
+```bash
+# Backup da sessão do WhatsApp (evita reescanear QR se recriar o container)
+docker run --rm -v waha-bolo_waha-bolo-sessions:/data -v "$PWD":/backup alpine \
+  tar czf /backup/waha-bolo-sessions-$(date +%F).tar.gz -C /data .
+
+# Fechar a porta 3001 para a internet (acesso só via túnel SSH)
+ufw deny 3001/tcp
+# Para acessar o dashboard depois: ssh -L 3001:localhost:3001 root@SEU_HOST
+```
+
 ### Passo a passo do deploy
 
 O deploy roda **na sua VPS** (não tenho acesso SSH). Comandos:

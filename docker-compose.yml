@@ -19,9 +19,9 @@ services:
     environment:
       - WAHA_API_KEY=${WAHA_API_KEY}
       - WHATSAPP_DEFAULT_ENGINE=WEBJS
-      # Webhook: eventos de mensagem vão para o workflow do n8n.
+      # Webhook: eventos de mensagem e entrada de membros vão para o n8n.
       - WHATSAPP_HOOK_URL=${WAHA_HOOK_URL}
-      - WHATSAPP_HOOK_EVENTS=message
+      - WHATSAPP_HOOK_EVENTS=message,group.v2.join
       - WAHA_DASHBOARD_USERNAME=${WAHA_DASHBOARD_USERNAME:-admin}
       - WAHA_DASHBOARD_PASSWORD=${WAHA_DASHBOARD_PASSWORD:-admin}
     volumes:
