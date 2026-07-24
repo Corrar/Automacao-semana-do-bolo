@@ -14,14 +14,28 @@ interface WahaSendPayload {
 export class WhatsAppService {
   private readonly baseUrl: string;
   private readonly session: string;
+  private readonly apiKey?: string;
 
   constructor(
     baseUrl: string = env.WAHA_URL,
     session: string = env.WAHA_SESSION,
+    apiKey: string | undefined = env.WAHA_API_KEY,
   ) {
     // Remove barra final para evitar URLs duplicadas.
     this.baseUrl = baseUrl.replace(/\/+$/, '');
     this.session = session;
+    this.apiKey = apiKey;
+  }
+
+  private buildHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    // O WAHA autentica via header X-Api-Key quando configurado.
+    if (this.apiKey) {
+      headers['X-Api-Key'] = this.apiKey;
+    }
+    return headers;
   }
 
   private async sendText(chatId: string, text: string): Promise<void> {
@@ -33,7 +47,7 @@ export class WhatsAppService {
 
     const response = await fetch(`${this.baseUrl}/api/sendText`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.buildHeaders(),
       body: JSON.stringify(payload),
     });
 

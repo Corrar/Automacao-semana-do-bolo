@@ -11,6 +11,8 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY é obrigatória'),
   WAHA_URL: z.string().url('WAHA_URL deve ser uma URL válida'),
   WAHA_SESSION: z.string().min(1).default('default'),
+  // Opcional: se o WAHA exigir autenticação (header X-Api-Key).
+  WAHA_API_KEY: z.string().optional(),
   GROUP_CHAT_ID: z
     .string()
     .min(1, 'GROUP_CHAT_ID é obrigatório')
