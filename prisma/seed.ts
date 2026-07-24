@@ -9,10 +9,10 @@ const prisma = new PrismaClient();
  */
 async function main(): Promise<void> {
   const participants = [
-    { nome: 'Bruno', telefone: '5511990000001', ordem: 1 },
-    { nome: 'João', telefone: '5511990000002', ordem: 2 },
-    { nome: 'Pedro', telefone: '5511990000003', ordem: 3 },
-    { nome: 'Carlos', telefone: '5511990000004', ordem: 4 },
+    { nome: 'William', telefone: '5518981966788', ordem: 1 },
+    { nome: 'Lincoln', telefone: '5518997455593', ordem: 2 },
+    { nome: 'Bruno', telefone: '5518997258289', ordem: 3 },
+    { nome: 'Evandro', telefone: '5518996684963', ordem: 4 },
   ];
 
   for (const participant of participants) {

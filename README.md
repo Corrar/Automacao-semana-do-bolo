@@ -102,7 +102,7 @@ npm install
 npm run prisma:generate
 npm run prisma:deploy        # ou: npm run prisma:migrate (dev)
 
-# 3. (Opcional) Popular participantes de exemplo (Bruno, João, Pedro, Carlos)
+# 3. (Opcional) Popular os participantes (William, Lincoln, Bruno, Evandro)
 npm run seed
 
 # 4. Ambiente de desenvolvimento (hot reload)
@@ -121,7 +121,7 @@ A rotação usa uma **lista circular** sobre os participantes **ativos**,
 ordenados pelo campo `ordem`:
 
 ```text
-Bruno → João → Pedro → Carlos → Bruno → ...
+William → Lincoln → Bruno → Evandro → William → ...
 ```
 
 - Participantes **inativos** são ignorados.
