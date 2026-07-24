@@ -115,6 +115,70 @@ npm start
 
 ---
 
+## 🐳 Deploy com Docker (WAHA dedicado)
+
+O Bolo sobe com um **WAHA próprio** (`waha-bolo`), totalmente isolado do WAHA
+do suporte Royale: rede, sessão, volume e API key separados. Assim o bot de
+suporte **nunca** vê o grupo do bolo e as mensagens saem de um número próprio.
+
+### 1. Configurar variáveis
+
+Crie um `.env` na raiz (usado pelo `docker-compose.yml`):
+
+```env
+GEMINI_API_KEY=sua-chave-do-gemini
+WAHA_API_KEY=uma-chave-forte-qualquer
+WAHA_DASHBOARD_USERNAME=admin
+WAHA_DASHBOARD_PASSWORD=troque-esta-senha
+GROUP_CHAT_ID=            # preenchido no passo 3
+```
+
+### 2. Subir os containers e conectar o número
+
+```bash
+docker compose up -d --build
+```
+
+- Acesse o dashboard do WAHA do Bolo em `http://SEU_HOST:3001`
+  (login = `WAHA_DASHBOARD_USERNAME` / `WAHA_DASHBOARD_PASSWORD`).
+- Inicie a sessão `default` e **escaneie o QR Code com o número
+  `+55 18 99812-6464`** (o número dedicado do Bolo).
+- **Importante:** adicione esse número ao grupo do bolo, senão ele não
+  consegue enviar a mensagem geral.
+
+### 3. Descobrir o `GROUP_CHAT_ID` e finalizar
+
+Com a sessão conectada e o número já no grupo:
+
+```bash
+curl -H "X-Api-Key: SUA_WAHA_API_KEY" http://SEU_HOST:3001/api/default/groups
+```
+
+Copie o `id` do grupo (formato `120...@g.us`), coloque em `GROUP_CHAT_ID` no
+`.env` e recrie o app:
+
+```bash
+docker compose up -d app
+
+# Popular os participantes (uma vez)
+docker compose exec app npm run seed
+```
+
+### 4. Testar o envio
+
+```bash
+# Dispara o agente manualmente (respeita a idempotência semanal)
+docker compose exec app node -e "require('http').request({host:'localhost',port:3000,path:'/agent/run',method:'POST'},r=>r.pipe(process.stdout)).end()"
+# ou de fora do container:
+curl -X POST http://SEU_HOST:3000/agent/run
+```
+
+> O `app` não expõe porta por padrão no compose (fica só na rede interna).
+> Se quiser acessar a API REST de fora, publique a porta adicionando
+> `ports: ['3000:3000']` ao serviço `app`.
+
+---
+
 ## 🔁 Algoritmo de rodízio
 
 A rotação usa uma **lista circular** sobre os participantes **ativos**,
