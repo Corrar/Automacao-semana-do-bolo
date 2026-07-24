@@ -1,7 +1,13 @@
-# WAHA dedicado + app do Bolo, totalmente isolados do WAHA do suporte Royale.
-# Rede, sessão, volume e API key próprios — nada é compartilhado.
+# WAHA dedicado do Bolo (waha-bolo), isolado do WAHA do suporte Royale.
+#
+# A LÓGICA do bolo agora vive no workflow do n8n ("Bolo da Sexta — Pagamentos").
+# Este compose sobe APENAS o WAHA dedicado — não rode o app Node junto, senão
+# haverá envio duplicado (o app Node é uma implementação alternativa/legada).
+#
+# Fluxo de rede:
+#  - waha-bolo -> n8n: via webhook público (WHATSAPP_HOOK_URL).
+#  - n8n -> waha-bolo: pelo nome de serviço `waha-bolo:3000` (mesma rede do n8n).
 services:
-  # WAHA exclusivo do Bolo. Conecte AQUI o número +55 18 99812-6464.
   waha-bolo:
     image: devlikeapro/waha:latest
     container_name: waha-bolo
@@ -13,40 +19,23 @@ services:
     environment:
       - WAHA_API_KEY=${WAHA_API_KEY}
       - WHATSAPP_DEFAULT_ENGINE=WEBJS
-      # Sem WHATSAPP_HOOK_URL de propósito: o Bolo só ENVIA mensagens,
-      # não precisa receber webhooks (e assim nada é encaminhado a lugar nenhum).
+      # Webhook: eventos de mensagem vão para o workflow do n8n.
+      - WHATSAPP_HOOK_URL=${WAHA_HOOK_URL}
+      - WHATSAPP_HOOK_EVENTS=message
       - WAHA_DASHBOARD_USERNAME=${WAHA_DASHBOARD_USERNAME:-admin}
       - WAHA_DASHBOARD_PASSWORD=${WAHA_DASHBOARD_PASSWORD:-admin}
     volumes:
       - waha-bolo-sessions:/app/.sessions
     networks:
-      - bolo-net
-
-  app:
-    build: .
-    container_name: bolo-app
-    restart: unless-stopped
-    depends_on:
-      - waha-bolo
-    environment:
-      - PORT=3000
-      - DATABASE_URL=file:/app/data/dev.db
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      # Comunicação interna com o WAHA do Bolo (nome do serviço na rede).
-      - WAHA_URL=http://waha-bolo:3000
-      - WAHA_SESSION=default
-      - WAHA_API_KEY=${WAHA_API_KEY}
-      - GROUP_CHAT_ID=${GROUP_CHAT_ID}
-      - TIMEZONE=America/Sao_Paulo
-    volumes:
-      - bolo-data:/app/data
-    networks:
-      - bolo-net
+      - n8n-net
 
 networks:
-  bolo-net:
-    driver: bridge
+  # Rede EXTERNA já usada pelo n8n, para que o n8n alcance http://waha-bolo:3000.
+  # Descubra o nome com: docker network ls  (ex.: root_default, n8n_default...)
+  # e informe em N8N_NETWORK no .env.
+  n8n-net:
+    external: true
+    name: ${N8N_NETWORK:-n8n_default}
 
 volumes:
   waha-bolo-sessions:
-  bolo-data:

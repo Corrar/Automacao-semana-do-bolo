@@ -1,5 +1,22 @@
 # 🍰 Automação Semana do Bolo — Agente "Bolo da Sexta"
 
+> ## ⚠️ Duas implementações neste repositório
+>
+> **1. Fluxo de PAGAMENTO (ATIVO) — workflow no n8n.** Todo mundo paga R$10
+> por semana e manda o comprovante no grupo; a IA lê o valor, monta um checklist
+> e libera o bolo quando todos pagam. É o que está em uso. Veja
+> **[Fluxo de pagamento no n8n](#-fluxo-de-pagamento-no-n8n-ativo)**.
+>
+> **2. App Node.js de RODÍZIO (LEGADO)** — a implementação original abaixo, que
+> sorteava quem levaria o bolo. Mantida para referência. **Não rode os dois ao
+> mesmo tempo** (envio duplicado). O `docker-compose.yml` sobe apenas o
+> `waha-bolo`; o serviço do app Node foi removido do compose de propósito.
+>
+> O `waha-bolo` (WAHA dedicado) é usado pelas duas, sempre isolado do WAHA do
+> suporte Royale.
+
+---
+
 Agente automatizado que gerencia o **rodízio semanal** do responsável por
 levar o bolo no encontro de sexta-feira.
 
@@ -115,67 +132,96 @@ npm start
 
 ---
 
-## 🐳 Deploy com Docker (WAHA dedicado)
+## 💳 Fluxo de pagamento no n8n (ATIVO)
 
-O Bolo sobe com um **WAHA próprio** (`waha-bolo`), totalmente isolado do WAHA
-do suporte Royale: rede, sessão, volume e API key separados. Assim o bot de
-suporte **nunca** vê o grupo do bolo e as mensagens saem de um número próprio.
+Workflow **`Bolo da Sexta — Pagamentos`** (n8n). Todo mundo paga **R$10 por
+semana** e manda o comprovante no grupo.
 
-### 1. Configurar variáveis
+**Como funciona:**
 
-Crie um `.env` na raiz (usado pelo `docker-compose.yml`):
+- **Quarta 20:00** (Schedule): reinicia os pagamentos da semana, envia um
+  **lembrete privado** para cada amigo e um **aviso no grupo** para todos pagarem.
+- **Comprovante** (Webhook do `waha-bolo`): quando alguém manda **imagem ou PDF**
+  do comprovante, a IA (Gemini 2.5 Flash) **lê o valor**, marca a pessoa como
+  paga e posta o **checklist** no grupo, por exemplo:
 
-```env
-GEMINI_API_KEY=sua-chave-do-gemini
-WAHA_API_KEY=uma-chave-forte-qualquer
-WAHA_DASHBOARD_USERNAME=admin
-WAHA_DASHBOARD_PASSWORD=troque-esta-senha
-GROUP_CHAT_ID=            # preenchido no passo 3
-```
+  ```text
+  💳 Pagamentos do bolo
 
-### 2. Subir os containers e conectar o número
+  Bruno: Pago R$10,00 🟢
+  Evandro: Pago R$10,00 🟢
+  Lincoln: Pendente ⚪
+  William: Pendente ⚪
+
+  (2/4 pagaram)
+  ```
+
+- Quando **todos** pagam, o checklist fica todo 🟢 e ele envia
+  **"Bolo desbloqueado com sucesso!"** 🎉
+
+**Estado no n8n (Data Tables):** `bolo_amigos` (participantes, já populada com
+William, Lincoln, Bruno e Evandro), `bolo_pagamentos` (status semanal) e
+`bolo_config` (guarda o `grupo`).
+
+### Passo a passo do deploy
+
+O deploy roda **na sua VPS** (não tenho acesso SSH). Comandos:
+
+#### 1. Subir o `waha-bolo`
+
+Crie o `.env` (veja `.env.example`) com `WAHA_API_KEY`, `WAHA_HOOK_URL`,
+`N8N_NETWORK` e a senha do dashboard. Descubra a rede do n8n:
 
 ```bash
-docker compose up -d --build
+docker network ls        # ache a rede do n8n (ex.: root_default, n8n_default)
+docker compose up -d      # sobe só o waha-bolo, na rede do n8n
 ```
 
-- Acesse o dashboard do WAHA do Bolo em `http://SEU_HOST:3001`
-  (login = `WAHA_DASHBOARD_USERNAME` / `WAHA_DASHBOARD_PASSWORD`).
-- Inicie a sessão `default` e **escaneie o QR Code com o número
-  `+55 18 99812-6464`** (o número dedicado do Bolo).
-- **Importante:** adicione esse número ao grupo do bolo, senão ele não
-  consegue enviar a mensagem geral.
+> ⚠️ Use em `WAHA_API_KEY` o **mesmo valor** da sua credencial `WAHA X-Api-Key`
+> no n8n — o workflow reutiliza essa credencial para falar com o `waha-bolo`.
 
-### 3. Descobrir o `GROUP_CHAT_ID` e finalizar
+#### 2. Conectar o número e criar o grupo
 
-Com a sessão conectada e o número já no grupo:
+- Dashboard em `http://SEU_HOST:3001` (login do `.env`).
+- Inicie a sessão `default` e **escaneie o QR com o `+55 18 99812-6464`**.
+- **Adicione esse número ao grupo do bolo** (senão ele não envia no grupo).
+
+#### 3. Preencher o `GROUP_CHAT_ID` na Data Table
 
 ```bash
 curl -H "X-Api-Key: SUA_WAHA_API_KEY" http://SEU_HOST:3001/api/default/groups
 ```
 
-Copie o `id` do grupo (formato `120...@g.us`), coloque em `GROUP_CHAT_ID` no
-`.env` e recrie o app:
+Copie o `id` do grupo (`120...@g.us`) e coloque na Data Table **`bolo_config`**,
+linha `chave = grupo`, coluna `valor` (pela UI do n8n).
 
-```bash
-docker compose up -d app
+#### 4. Ligar as credenciais no workflow e ativar
 
-# Popular os participantes (uma vez)
-docker compose exec app npm run seed
-```
+Abra o workflow **`Bolo da Sexta — Pagamentos`** no n8n e, nos nós HTTP, selecione:
 
-### 4. Testar o envio
+- **WAHA X-Api-Key** nos nós `Aviso no Grupo`, `Lembrete Privado`,
+  `Baixar Comprovante`, `Enviar Checklist`, `Falha Leitura`.
+- **x-goog-api-key** no nó `Ler Valor (IA)`.
 
-```bash
-# Dispara o agente manualmente (respeita a idempotência semanal)
-docker compose exec app node -e "require('http').request({host:'localhost',port:3000,path:'/agent/run',method:'POST'},r=>r.pipe(process.stdout)).end()"
-# ou de fora do container:
-curl -X POST http://SEU_HOST:3000/agent/run
-```
+Confirme o fuso do workflow em **Settings → Timezone = America/Sao_Paulo** e
+**ative** o workflow. Pronto: o webhook do `waha-bolo` já aponta para ele.
 
-> O `app` não expõe porta por padrão no compose (fica só na rede interna).
-> Se quiser acessar a API REST de fora, publique a porta adicionando
-> `ports: ['3000:3000']` ao serviço `app`.
+#### 5. Testar
+
+- Mande uma imagem/PDF de comprovante no grupo com um dos números cadastrados →
+  o checklist deve aparecer no grupo.
+- Para testar o lembrete sem esperar a quarta, use **Execute Workflow** no nó
+  `Quarta 20h`.
+
+---
+
+## 🐳 App Node.js legado (opcional, NÃO usar junto com o n8n)
+
+A implementação original em Node roda o **rodízio** (sortear quem leva o bolo),
+não o modelo de pagamento. Só faz sentido standalone e **nunca** junto do
+workflow do n8n (senão os dois disparam na quarta). Para rodar isolado, use o
+`Dockerfile`/`.env` — mas note que o `docker-compose.yml` **não** inclui mais
+o serviço do app.
 
 ---
 
