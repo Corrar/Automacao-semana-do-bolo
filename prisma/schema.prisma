@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Participant {
+  id        String   @id @default(uuid())
+  nome      String
+  telefone  String
+  ordem     Int
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  histories History[]
+  rotations Rotation[]
+
+  @@map("participants")
+}
+
+model History {
+  id             String   @id @default(uuid())
+  participantId  String
+  week           Int
+  year           Int
+  groupMessage   String
+  privateMessage String
+  createdAt      DateTime @default(now())
+
+  participant Participant @relation(fields: [participantId], references: [id])
+
+  @@unique([week, year])
+  @@index([participantId])
+  @@map("history")
+}
+
+model Rotation {
+  id                   String   @id @default(uuid())
+  currentParticipantId String?
+  updatedAt            DateTime @updatedAt
+
+  currentParticipant Participant? @relation(fields: [currentParticipantId], references: [id])
+
+  @@map("rotation")
+}
