@@ -139,8 +139,13 @@ semana** e manda o comprovante no grupo.
 
 **Como funciona:**
 
-- **Quarta 20:00** (Schedule): reinicia os pagamentos da semana, envia um
-  **lembrete privado** para cada amigo e um **aviso no grupo** para todos pagarem.
+- **Quarta 10:00** (Schedule): abre a cobrança da semana **preservando quem já
+  pagou antecipado** — só quem está pendente vira `PENDENTE` e recebe o
+  **lembrete privado**; o **aviso no grupo** menciona quem já pagou.
+- **Pagamento antecipado**: o comprovante pode ser enviado **qualquer dia**
+  (inclusive antes da quarta). O registro usa *upsert*: se a linha da semana
+  ainda não existe, ela é criada direto como `PAGO`. A "semana" é ancorada na
+  **sexta do bolo** (sábado/domingo já contam para a sexta seguinte).
 - **Comprovante** (Webhook do `waha-bolo`): quando alguém manda **imagem ou PDF**
   do comprovante, a IA (Gemini 2.5 Flash) **lê o valor**, marca a pessoa como
   paga e posta o **checklist** no grupo, por exemplo:
