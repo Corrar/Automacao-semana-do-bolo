@@ -147,10 +147,13 @@ semana** e manda o comprovante no grupo.
   ainda não existe, ela é criada direto como `PAGO`. A "semana" é ancorada na
   **sexta do bolo** (sábado/domingo já contam para a sexta seguinte).
 - **Pagamento de várias semanas** (ex.: Pix de R$30 = 3 semanas): cada R$10
-  cobre uma sexta (máx. 8). A semana atual fica `PAGO` e as próximas são
-  criadas como `PAGO` adiantado — a pessoa não recebe cobrança nem lembrete
-  nessas semanas. A confirmação no privado reflete o valor real e o grupo
-  recebe um aviso gamificado ("🏆 JOGADA DE MESTRE!") junto do checklist.
+  cobre uma sexta (máx. 8 por comprovante). O crédito é ancorado na **primeira
+  sexta ainda não paga** da pessoa — quem já pagou a semana e manda outro
+  comprovante adianta as seguintes (nada é ignorado nem duplicado; o hash
+  barra comprovante repetido). A pessoa não recebe cobrança nem lembrete nas
+  semanas adiantadas. A confirmação no privado reflete o valor real e informa
+  até quando está isento; o grupo recebe um aviso gamificado
+  ("🏆 JOGADA DE MESTRE!") junto do checklist sempre que alguém adianta.
 - **Comprovante** (Webhook do `waha-bolo`): quando alguém manda **imagem ou PDF**
   do comprovante, a IA (Gemini 2.5 Flash) **lê o valor**, marca a pessoa como
   paga e posta o **checklist** no grupo, por exemplo:
