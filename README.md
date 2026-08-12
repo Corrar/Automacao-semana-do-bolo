@@ -185,7 +185,8 @@ Além do fluxo básico de cobrança + comprovante, o workflow tem:
 | 💸 Pix na cobrança | quarta 20h / sexta 9h | Inclui a chave PIX (linha `pix` da `bolo_config`) nas mensagens |
 | 🗳️ Enquete de sabor | quarta 20h | Enquete nativa no grupo (sabores na linha `sabores` da `bolo_config`) |
 | ☀️ Cutucada | sexta 9h | Cobra **só quem está pendente** (privado + resumo no grupo) |
-| 💬 Comandos | a qualquer hora | `status` (checklist) · `caixa`/`saldo` (resumo financeiro) no grupo |
+| 💬 Comandos | a qualquer hora | `status` (checklist gamificado) · `caixa`/`saldo` (resumo financeiro) no grupo |
+| 🎮 Gamificação | por pagamento | Medalhas 🥇🥈🥉 pela ordem de pagamento da semana; streak 🔥N de semanas seguidas; ⏩+N semanas adiantadas; títulos por adiantamento (🥉 Precavido, 🥈 Estrategista, 🥇 Visionário, 👑 Lenda do Bolo); eventos "⚡ primeiro a pagar" e "🔓 desbloqueou o bolo" |
 | 🧾 Prestação de contas | ao comprar o bolo | Foto da nota com legenda contendo "bolo" → IA lê o custo → saldo do caixa no grupo |
 | 👀 Anti-fraude | por comprovante | Hash barra comprovante repetido; valor < R$10 gera aviso "faltou R$X" |
 | 🎉 Cadastro automático | novato entra no grupo | Insere em `bolo_amigos` + boas-vindas (requer evento `group.v2.join`) |
