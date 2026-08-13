@@ -185,11 +185,8 @@ Além do fluxo básico de cobrança + comprovante, o workflow tem:
 | 💸 Pix na cobrança | quarta 20h / sexta 9h | Inclui a chave PIX (linha `pix` da `bolo_config`) nas mensagens |
 | 🗳️ Enquete de sabor | quarta 20h | Enquete nativa no grupo (sabores na linha `sabores` da `bolo_config`) |
 | ☀️ Cutucada | sexta 9h | Cobra **só quem está pendente** (privado + resumo no grupo) |
-| 💬 Comandos | a qualquer hora | `status` (checklist gamificado) · `caixa`/`saldo` (resumo financeiro) no grupo |
-| 🎮 Gamificação | por pagamento | Medalhas 🥇🥈🥉 pela ordem de pagamento da semana; streak 🔥N de semanas seguidas; ⏩+N semanas adiantadas; títulos por adiantamento (🥉 Precavido, 🥈 Estrategista, 🥇 Visionário, 👑 Lenda do Bolo); eventos "⚡ primeiro a pagar" e "🔓 desbloqueou o bolo" |
-| 🆙 XP e patentes | por pagamento | 1 sexta paga = 1 XP; patentes 🐣 Novato (0-3) → 🧁 Aprendiz (4-7) → 👨‍🍳 Mestre Cuca (8-15) → 🥖 Padeiro Real (16-31) → 👑🎂 Imperador do Bolo (32+); anúncio de "LEVEL UP" no grupo ao subir |
-| 📊 Placar vivo | checklist/status | Barra de progresso 🟩⬜; 🏁 corrida do mês (quem abriu mais semanas em 1º); 👑 maior sequência ativa; 🐢 lanterninha da semana quando fecha; frases que variam a cada envio |
-| 💀 Streak em risco | sexta 9h | Cutucada avisa (privado + grupo) quem perde a sequência 🔥N se não pagar até o fim do dia |
+| 💬 Comandos | a qualquer hora | `status` (checklist simples) · `caixa`/`saldo` (resumo financeiro) no grupo |
+| 🏆 Aviso de adiantamento | por pagamento | Quando alguém paga 2+ semanas (ou adianta com comprovante extra), o grupo recebe o aviso "🏆⚡ JOGADA DE MESTRE!" junto do checklist |
 | 🧾 Prestação de contas | ao comprar o bolo | Foto da nota com legenda contendo "bolo" → IA lê o custo → saldo do caixa no grupo |
 | 👀 Anti-fraude | por comprovante | Hash barra comprovante repetido; valor < R$10 gera aviso "faltou R$X" |
 | 🎉 Cadastro automático | novato entra no grupo | Insere em `bolo_amigos` + boas-vindas (requer evento `group.v2.join`) |
