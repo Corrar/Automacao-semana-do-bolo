@@ -194,6 +194,28 @@ Além do fluxo básico de cobrança + comprovante, o workflow tem:
 | ❤️‍🩹 Monitor de saúde | a cada 15 min | Workflow "Monitor Saúde WAHA Bolo": alerta no privado se a sessão cair |
 | ⚠️ Falha de leitura | por comprovante | Se o download do comprovante ou a IA falharem (cota do Gemini, rede, WAHA fora), o agente tenta 3× e então **avisa no grupo** que a leitura está fora e que o pagamento não foi registrado — nunca mais falha em silêncio |
 
+### ⚠️ Cota do Gemini (isolar do Comercial)
+
+Os nós **`Ler Valor (IA)`** e **`Ler Custo (IA)`** usam a credencial
+`x-goog-api-key` — a **mesma** dos workflows do Comercial, no mesmo projeto do
+Google AI Studio.
+
+Em **15/08/2026** esse projeto estourou o *monthly spending cap* (HTTP 429) por
+causa do workflow **"Comercial — Personalizar ofertas (IA)"**, que rodava de
+hora em hora em lotes de 10 prospects. O bolo caiu junto: o comprovante do
+Evandro em 19/08 não foi lido e ninguém foi avisado.
+
+**Para isolar** (recomendado — o volume do bolo são poucos comprovantes por
+semana, cabe folgado no free tier):
+
+1. Criar uma API key do Gemini em **outro projeto** no Google AI Studio;
+2. No n8n, cadastrar uma credencial **Header Auth** com nome de header
+   `x-goog-api-key`, salvando como **`x-goog-api-key-bolo`**;
+3. Selecionar essa credencial nos nós `Ler Valor (IA)` e `Ler Custo (IA)`.
+
+> A troca precisa ser feita pela UI do n8n — a API/MCP não permite anexar
+> credenciais do tipo Header Auth a nós HTTP Request.
+
 ### Manutenção (VPS)
 
 ```bash
