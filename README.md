@@ -192,6 +192,7 @@ Além do fluxo básico de cobrança + comprovante, o workflow tem:
 | 🎉 Cadastro automático | novato entra no grupo | Insere em `bolo_amigos` + boas-vindas (requer evento `group.v2.join`) |
 | 🏆 Ranking mensal | dia 1, 12h | Pódio dos pagadores mais rápidos + lanterna do mês |
 | ❤️‍🩹 Monitor de saúde | a cada 15 min | Workflow "Monitor Saúde WAHA Bolo": alerta no privado se a sessão cair |
+| ⚠️ Falha de leitura | por comprovante | Se o download do comprovante ou a IA falharem (cota do Gemini, rede, WAHA fora), o agente tenta 3× e então **avisa no grupo** que a leitura está fora e que o pagamento não foi registrado — nunca mais falha em silêncio |
 
 ### Manutenção (VPS)
 
