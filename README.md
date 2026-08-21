@@ -194,6 +194,24 @@ Além do fluxo básico de cobrança + comprovante, o workflow tem:
 | ❤️‍🩹 Monitor de saúde | a cada 15 min | Workflow "Monitor Saúde WAHA Bolo": alerta no privado se a sessão cair |
 | ⚠️ Falha de leitura | por comprovante | Se o download do comprovante ou a IA falharem (cota do Gemini, rede, WAHA fora), o agente tenta 3× e então **avisa no grupo** que a leitura está fora e que o pagamento não foi registrado — nunca mais falha em silêncio |
 
+### ⏸️ Leitura por IA pausada (desde 19/08/2026)
+
+Enquanto a cota do Gemini está estourada, os dois ramos que dependem de IA
+foram **desconectados do nó `Roteador`**:
+
+| Saída | Destino | O que era |
+| --- | --- | --- |
+| 0 (`compra`) | `Compra Ver Dedup` | Nota fiscal do bolo → prestação de contas |
+| 1 (`comprovante`) | `Ver Dedup` | Confirmação de pagamento pelo comprovante |
+
+Efeito: comprovantes enviados no grupo são **ignorados em silêncio** (sem
+avisos de erro) e os pagamentos são marcados **na mão** na data table
+`bolo_pagamentos`. Continuam funcionando normalmente: cobrança de quarta,
+cutucada de sexta, comandos `status`/`caixa` e cadastro de novato.
+
+**Para religar:** recriar as duas conexões acima no `Roteador` — depois de
+liberar a cota e, de preferência, isolar a credencial (abaixo).
+
 ### ⚠️ Cota do Gemini (isolar do Comercial)
 
 Os nós **`Ler Valor (IA)`** e **`Ler Custo (IA)`** usam a credencial
